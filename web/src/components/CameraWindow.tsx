@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import WebcamPreview from "./WebcamPreview";
 import type { FacePreset } from "@/lib/faceWarp";
@@ -7,6 +8,50 @@ import { scoreToFaceFilter } from "@/lib/scoreToFaceFilter";
 
 type FilterStatus = "idle" | "loading" | "ready" | "error";
 type ScanPhase = "idle" | "scanning" | "done";
+type ReactionMeme = { src: string; alt: string; width: number; height: number };
+
+const LOW_AURA_MEMES: ReactionMeme[] = [
+  { src: "/reactions/vigilante.gif", alt: "A serious-looking man", width: 320, height: 320 },
+  { src: "/reactions/ishowspeed-shocked.gif", alt: "A shocked reaction", width: 360, height: 275 },
+  { src: "/reactions/disgusted-cat.png", alt: "A disgusted cat", width: 300, height: 300 },
+  { src: "/reactions/koloboks-yellow-emojis.gif", alt: "Two surprised yellow emoji characters", width: 200, height: 142 },
+];
+
+const MID_AURA_MEMES: ReactionMeme[] = [
+  { src: "/reactions/pepe.gif", alt: "A disappointed Pepe frog", width: 220, height: 220 },
+  { src: "/reactions/sad-cat-crying.png", alt: "A crying pixel cat", width: 348, height: 348 },
+  { src: "/reactions/squidward.gif", alt: "Squidward dancing awkwardly", width: 720, height: 405 },
+];
+
+const MID_HIGH_AURA_MEMES: ReactionMeme[] = [
+  { src: "/reactions/cat-rainbow.gif", alt: "A cat flying with a rainbow trail", width: 500, height: 198 },
+  { src: "/reactions/patrick-stars.gif", alt: "Patrick Star looking delighted", width: 200, height: 200 },
+  { src: "/reactions/banana.gif", alt: "A surprised dancing banana", width: 500, height: 530 },
+  { src: "/reactions/jeff.gif", alt: "A pixel-art character dancing", width: 480, height: 384 },
+];
+
+const HIGH_AURA_MEMES: ReactionMeme[] = [
+  { src: "/reactions/suit-reveal.gif", alt: "A man in a suit making a confident entrance", width: 220, height: 293 },
+  { src: "/reactions/shrek.gif", alt: "Shrek in a dramatic scene", width: 220, height: 247 },
+  { src: "/reactions/goofy-baby.gif", alt: "A goofy baby", width: 360, height: 360 },
+  { src: "/reactions/sonic-wink.gif", alt: "Sonic the Hedgehog winking", width: 320, height: 320 },
+  { src: "/reactions/pixel-character-dance.gif", alt: "A pixel-art character dancing", width: 500, height: 500 },
+  { src: "/reactions/dancing-cat.gif", alt: "A kitten dancing", width: 220, height: 211 },
+];
+
+function pickDifferentMeme(
+  memes: readonly ReactionMeme[],
+  lastIndex: { current: number | null },
+): ReactionMeme {
+  const indexes = memes.map((_, index) => index);
+  if (indexes.length === 0) throw new Error("Reaction meme pools must not be empty.");
+  const candidates = indexes.filter((index) => index !== lastIndex.current);
+  const choices = candidates.length > 0 ? candidates : indexes;
+  const nextIndex = choices[Math.floor(Math.random() * choices.length)];
+  if (nextIndex === undefined) throw new Error("Could not select a reaction meme.");
+  lastIndex.current = nextIndex;
+  return memes[nextIndex];
+}
 
 export default function CameraWindow() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("idle");
@@ -19,12 +64,27 @@ export default function CameraWindow() {
   const [strength, setStrength] = useState(0.75);
   const [demoScore, setDemoScore] = useState(60);
   const [trackingMessage, setTrackingMessage] = useState("Loading face tracking…");
+  const [popupMeme, setPopupMeme] = useState<ReactionMeme | null>(null);
+  const [popupScore, setPopupScore] = useState<number | null>(null);
   const onTracking = useCallback((message: string) => setTrackingMessage(message), []);
   const scanTimer = useRef<number | null>(null);
+  const lastLowPopupIndex = useRef<number | null>(null);
+  const lastMidPopupIndex = useRef<number | null>(null);
+  const lastMidHighPopupIndex = useRef<number | null>(null);
+  const lastHighPopupIndex = useRef<number | null>(null);
 
   useEffect(() => () => {
     if (scanTimer.current) clearInterval(scanTimer.current);
   }, []);
+
+  useEffect(() => {
+    if (!popupMeme) return;
+    const timeoutId = window.setTimeout(() => {
+      setPopupMeme(null);
+      setPopupScore(null);
+    }, 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [popupMeme]);
 
   const stopCamera = useCallback(() => {
     if (scanTimer.current) clearInterval(scanTimer.current);
@@ -42,6 +102,8 @@ export default function CameraWindow() {
   const scanAura = useCallback(() => {
     if (filterStatus !== "ready" || scanPhase === "scanning") return;
 
+    setPopupMeme(null);
+    setPopupScore(null);
     setScanPhase("scanning");
     const steps = [
       "Starting demo scan…",
@@ -64,6 +126,16 @@ export default function CameraWindow() {
       setStrength(output.strength);
       if (filter === "original") setTrackingMessage("Loading face tracking…");
       setScanLabel(`Demo score ${output.score}/100 · ${output.preset === "mog" ? "Mog" : "Not Mog"} ${Math.round(output.strength * 100)}%`);
+      setPopupScore(output.score);
+      if (output.score >= 75) {
+        setPopupMeme(pickDifferentMeme(HIGH_AURA_MEMES, lastHighPopupIndex));
+      } else if (output.score >= 50) {
+        setPopupMeme(pickDifferentMeme(MID_HIGH_AURA_MEMES, lastMidHighPopupIndex));
+      } else if (output.score >= 25) {
+        setPopupMeme(pickDifferentMeme(MID_AURA_MEMES, lastMidPopupIndex));
+      } else {
+        setPopupMeme(pickDifferentMeme(LOW_AURA_MEMES, lastLowPopupIndex));
+      }
       setScanPhase("done");
     }, 700);
     scanTimer.current = id;
@@ -79,6 +151,33 @@ export default function CameraWindow() {
           <button type="button" aria-label="Close" onClick={stopCamera} />
         </div>
       </div>
+
+      {popupMeme && popupScore !== null && (
+        <div className="nt-meme-popup" role="dialog" aria-label={`Demo aura score ${popupScore}% reaction`}>
+          <div className="nt-meme-popup__card">
+            <button
+              type="button"
+              className="nt-meme-popup__close"
+              aria-label="Close reaction"
+              onClick={() => {
+                setPopupMeme(null);
+                setPopupScore(null);
+              }}
+            >
+              ×
+            </button>
+            <strong>AURA SCORE: {popupScore}% · DEMO</strong>
+            <Image
+              src={popupMeme.src}
+              alt={popupMeme.alt}
+              width={popupMeme.width}
+              height={popupMeme.height}
+              className={popupMeme.src.endsWith(".png") ? "nt-meme-popup__static" : undefined}
+              unoptimized
+            />
+          </div>
+        </div>
+      )}
 
       <div className="nt-menubar" role="menubar">
         <button type="button" role="menuitem">
