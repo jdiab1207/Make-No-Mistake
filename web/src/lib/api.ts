@@ -21,7 +21,6 @@ export type ScanGrade = {
   red_flags?: string[];
   vibe_tags?: string[];
   career_read?: string;
-  compatibility?: string;
   metrics?: ScanMetrics;
   signals: string[];
 };

@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Skip OpenNext server runtime — this site is a static export.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
+# Optional: set in Netlify UI for a hosted FastAPI backend
+# NEXT_PUBLIC_API_BASE = "https://your-api.example.com"

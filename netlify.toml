@@ -1,0 +1,11 @@
+# Monorepo: Next.js app is in /web (see web/netlify.toml for details).
+# If connecting Git builds from the repo root, set Base directory = "web"
+# in the Netlify UI, or keep deploying from /web via CLI.
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"

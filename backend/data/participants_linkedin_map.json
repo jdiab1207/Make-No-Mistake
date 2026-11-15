@@ -1,0 +1,312 @@
+{
+  "Rieley Hunt": {
+    "linkedin_url": "https://www.linkedin.com/in/rieleyhunt/",
+    "confidence": "high",
+    "note": "Carleton CS"
+  },
+  "Moaz Sholook": {
+    "linkedin_url": "https://www.linkedin.com/in/moazsholook/",
+    "confidence": "high",
+    "note": "Carleton CS / Shopify"
+  },
+  "Ege Ercin": {
+    "linkedin_url": "https://www.linkedin.com/in/ege-ercin/",
+    "confidence": "high",
+    "note": "UofT EE Ottawa"
+  },
+  "Advay Chandorkar": {
+    "linkedin_url": "https://www.linkedin.com/in/advay/",
+    "confidence": "high",
+    "note": "advay.ca"
+  },
+  "Hamza Alsarakbi": {
+    "linkedin_url": "https://www.linkedin.com/in/hamza-alsarakbi/",
+    "confidence": "high",
+    "note": "Carleton / Shopify"
+  },
+  "Bader EL-Asadi": {
+    "linkedin_url": "https://www.linkedin.com/in/bader-el-asadi/",
+    "confidence": "high",
+    "note": "Carleton CS"
+  },
+  "Ishar Ghura": {
+    "linkedin_url": "https://www.linkedin.com/in/ishar-ghura/",
+    "confidence": "high",
+    "note": "Carleton CS"
+  },
+  "Thomas Nolasque": {
+    "linkedin_url": "https://www.linkedin.com/in/thomas-nolasque/",
+    "confidence": "high",
+    "note": "Carleton CS"
+  },
+  "Raymond Liu": {
+    "linkedin_url": "https://www.linkedin.com/in/raymond-liu-357368268/",
+    "confidence": "high",
+    "note": "CS @ Carleton, Shopify intern (Ottawa)"
+  },
+  "Ryushen Tan": {
+    "linkedin_url": "https://www.linkedin.com/in/ryushen/",
+    "confidence": "high",
+    "note": "Carleton CS, prolific hackathon winner"
+  },
+  "Kai Song": {
+    "linkedin_url": "https://www.linkedin.com/in/kai-song/",
+    "confidence": "high",
+    "note": "Carleton CS/AI, hackathon participant"
+  },
+  "Donny Dang": {
+    "linkedin_url": "https://www.linkedin.com/in/donny-dang-1425532a6/",
+    "confidence": "high",
+    "note": "CS @ Carleton, SickKids data engineer"
+  },
+  "Jad Hamzeh": {
+    "linkedin_url": "https://www.linkedin.com/in/jad-hamzeh-475639265/",
+    "confidence": "high",
+    "note": "Carleton software engineering alumnus (Ottawa)"
+  },
+  "Vickie Chen": {
+    "linkedin_url": "https://www.linkedin.com/in/vickiecchen/",
+    "confidence": "high",
+    "note": "CS @ Carleton, Shopify Dev Degree"
+  },
+  "Ann Li": {
+    "linkedin_url": "https://www.linkedin.com/in/ann-li-108001271/",
+    "confidence": "high",
+    "note": "CS @ Carleton, Shopify SWE intern"
+  },
+  "Daniel He": {
+    "linkedin_url": "https://www.linkedin.com/in/daniel-he-uottawa2030/",
+    "confidence": "high",
+    "note": "uOttawa software engineering, Hack the Hill III"
+  },
+  "Tony Bi": {
+    "linkedin_url": "https://www.linkedin.com/in/tony-jiantaobi/",
+    "confidence": "medium",
+    "note": "Ottawa developer (uOttawa/UCC), not Carleton"
+  },
+  "Josh Zhou": {
+    "linkedin_url": "https://www.linkedin.com/in/josh-zhou-7ba22b35a/",
+    "confidence": "medium",
+    "note": "Devpost Ottawa; YRDSB student, limited LinkedIn detail"
+  },
+  "Barbara Eguche": {
+    "linkedin_url": "https://www.linkedin.com/in/barbaraeguche/",
+    "confidence": "medium",
+    "note": "Concordia CS (Toronto), hackathon participant"
+  },
+  "Andrew Dai": {
+    "linkedin_url": "https://www.linkedin.com/in/andrew-dai-dev/",
+    "confidence": "medium",
+    "note": "UWaterloo CS, JAMHacks lead (GTA not Ottawa)"
+  },
+  "Nathan Sta Monica": {
+    "linkedin_url": "https://www.linkedin.com/in/nathanstamonica/",
+    "confidence": "high",
+    "note": "Carleton CS cybersecurity, Ottawa"
+  },
+  "Yiding Shan": {
+    "linkedin_url": "https://www.linkedin.com/in/yiding-shan/",
+    "confidence": "high",
+    "note": "Statistics/CS @ UofT, Mississauga"
+  },
+  "Michelle Murphy": {
+    "linkedin_url": "https://www.linkedin.com/in/michellemurphy529/",
+    "confidence": "high",
+    "note": "Carleton CS grad, AI/LLM dev Ottawa"
+  },
+  "Rayyan Omar": {
+    "linkedin_url": "https://www.linkedin.com/in/rayyanomar/",
+    "confidence": "high",
+    "note": "uOttawa software eng, Hack the Hill / uOttaHack"
+  },
+  "Adam Jemmali": {
+    "linkedin_url": "https://www.linkedin.com/in/adam-jem/",
+    "confidence": "high",
+    "note": "CS @ uOttawa, MLH hackathon winner"
+  },
+  "Gautam Khosla": {
+    "linkedin_url": "https://www.linkedin.com/in/gautamkhosla/",
+    "confidence": "high",
+    "note": "uOttawa computer eng, Ottawa hackathons"
+  },
+  "Akshat Jhawar": {
+    "linkedin_url": "https://www.linkedin.com/in/akshat-jhawar-426314262/",
+    "confidence": "high",
+    "note": "Carleton CS AI/ML, Ottawa"
+  },
+  "Shuting Li": {
+    "linkedin_url": "https://www.linkedin.com/in/shuting-li-688b032a0/",
+    "confidence": "high",
+    "note": "Carleton CS AI/ML, Nokia intern Kanata"
+  },
+  "Ashton Grant": {
+    "linkedin_url": "https://www.linkedin.com/in/ashton-grant-952784297/",
+    "confidence": "high",
+    "note": "UW CS student, Ontario"
+  },
+  "Shamsad Anam": {
+    "linkedin_url": "https://www.linkedin.com/in/shamsadanam/",
+    "confidence": "medium",
+    "note": "Unique name; full-stack dev (Bangladesh)"
+  },
+  "Farid Methia": {
+    "linkedin_url": "https://www.linkedin.com/in/farid-methia/",
+    "confidence": "medium",
+    "note": "Unique name; founder/dev Raveo"
+  },
+  "Harshal Karchkhed": {
+    "linkedin_url": "https://www.linkedin.com/in/harshal-karchkhed-239543400/",
+    "confidence": "medium",
+    "note": "Unique surname; CS student India"
+  },
+  "Atharv Chougule": {
+    "linkedin_url": "https://www.linkedin.com/in/atharv-chougule/",
+    "confidence": "medium",
+    "note": "2× hackathon winner, VIT Pune student"
+  },
+  "Barnabas Buzas": {
+    "linkedin_url": "https://www.linkedin.com/in/barnabas-buzas/",
+    "confidence": "medium",
+    "note": "Unique name; software engineer Hungary"
+  },
+  "Niseni Angammana": {
+    "linkedin_url": "https://www.linkedin.com/in/niseni-angammana-2185631a2/",
+    "confidence": "high",
+    "note": "Unique name; Moratuwa engineer / BizDocs co-founder"
+  },
+  "Shagun Prasad": {
+    "linkedin_url": "https://www.linkedin.com/in/shagunprasad/",
+    "confidence": "high",
+    "note": "VIT CS grad; hackathon/blockchain community builder"
+  },
+  "Rohan Kumar Routa": {
+    "linkedin_url": "https://www.linkedin.com/in/rohan-kumar-routa-ind/",
+    "confidence": "high",
+    "note": "Distinct spelling; BCA student, web/AI builder"
+  },
+  "Mohammed Ibrahim Raza": {
+    "linkedin_url": "https://www.linkedin.com/in/mohammed-ibrahim-raza-2a560b248/",
+    "confidence": "high",
+    "note": "Full name match; founder/dev (Leeza, hackathons)"
+  },
+  "Ahmed Baysuyev": {
+    "linkedin_url": "https://www.linkedin.com/in/ahmed-baysuyev/",
+    "confidence": "high",
+    "note": "Canadian founder; AGI Ventures Canada hackathons"
+  },
+  "William Cheung": {
+    "linkedin_url": "https://www.linkedin.com/in/williamcheungtoronto/",
+    "confidence": "high",
+    "note": "GTA AI engineer; 5+ Devpost hackathon wins, many projects"
+  },
+  "Zeynep Ozer": {
+    "linkedin_url": "https://www.linkedin.com/in/zeynepozermcmaster/",
+    "confidence": "high",
+    "note": "McMaster CS student (Dundas ON); GitHub imthatzey"
+  },
+  "imthatzey Ozer": {
+    "linkedin_url": "https://www.linkedin.com/in/zeynepozermcmaster/",
+    "confidence": "high",
+    "note": "GitHub imthatzey on McMaster COMPSCI 1XD3 team"
+  },
+  "Jagadeesh HS": {
+    "linkedin_url": "https://www.linkedin.com/in/jagadeesh-h-s/",
+    "confidence": "medium",
+    "note": "Name match; VIT integrated MTech data science (not senior Siemens profile)"
+  },
+  "Lingxiao Du": {
+    "linkedin_url": "https://www.linkedin.com/in/lingxdu/",
+    "confidence": "medium",
+    "note": "Exact name; U-Michigan UX research & design student"
+  },
+  "Vrattesh Anand": {
+    "linkedin_url": "https://www.linkedin.com/in/vrattesh-anand-7177b7320/",
+    "confidence": "medium",
+    "note": "Unique slug; youth research/MUN posts, no other Vrattesh match"
+  },
+  "Daniel Arulpragasam": {
+    "linkedin_url": "https://www.linkedin.com/in/daniel-arulpragasam/",
+    "confidence": "high",
+    "note": "CS @ Carleton, ML intern @ Shopify (Ottawa)"
+  },
+  "Seydi Cheikh Wade": {
+    "linkedin_url": "https://www.linkedin.com/in/seydi-c/",
+    "confidence": "high",
+    "note": "Software engineering @ Carleton, StatsCan co-op"
+  },
+  "Zixiao Shawn Shi": {
+    "linkedin_url": "https://www.linkedin.com/in/zixiao-shawn-shi-phd/",
+    "confidence": "high",
+    "note": "Carleton PhD/adjunct, Ottawa tech (Coinbase/Meta)"
+  },
+  "Joshua Aryeetey": {
+    "linkedin_url": "https://www.linkedin.com/in/joshua-ary/",
+    "confidence": "high",
+    "note": "Software engineering @ Toronto Met (GTA)"
+  },
+  "David Ndizeye": {
+    "linkedin_url": "https://www.linkedin.com/in/david-ndizeye-4a502b409/",
+    "confidence": "high",
+    "note": "Unique name; ALU programmer (Rwanda)"
+  },
+  "Mutungi Trevor": {
+    "linkedin_url": "https://www.linkedin.com/in/mutungi-trevor-25015918b/",
+    "confidence": "high",
+    "note": "Unique name; Connect Care Uganda co-founder"
+  },
+  "Favour Jokparose": {
+    "linkedin_url": "https://www.linkedin.com/in/favour-jokparose/",
+    "confidence": "high",
+    "note": "Unique name; data/BI analyst (Nigeria)"
+  },
+  "Aryan Ramedwar": {
+    "linkedin_url": "https://www.linkedin.com/in/aryan-ramedwar/",
+    "confidence": "high",
+    "note": "Only exact-name match; full-stack developer"
+  },
+  "Ishanvi Verma": {
+    "linkedin_url": "https://www.linkedin.com/in/ishanvi-verma-b54b27272/",
+    "confidence": "high",
+    "note": "Bennett Univ CS; Smart India Hackathon team"
+  },
+  "Padma Valli Dedipya Srungaram": {
+    "linkedin_url": "https://www.linkedin.com/in/padmavalli-dedipya-srungaram-868a73195/",
+    "confidence": "high",
+    "note": "Distinct long name; backend dev @ TCS"
+  },
+  "Navjyot Singh": {
+    "linkedin_url": "https://www.linkedin.com/in/singhnavjot97/",
+    "confidence": "high",
+    "note": "Carleton MIPIS student; Ottawa/Gatineau area"
+  },
+  "Bikat Tilahun": {
+    "linkedin_url": "https://www.linkedin.com/in/bikat-tilahun-b6044940b/",
+    "confidence": "medium",
+    "note": "Only match; software engineer student (Ethiopia)"
+  },
+  "Chittaranjan Kakati": {
+    "linkedin_url": "https://www.linkedin.com/in/chittaranjan-kakati-ab44851b0/",
+    "confidence": "medium",
+    "note": "Only match; student (Guwahati)"
+  },
+  "Javeria Fateh": {
+    "linkedin_url": "https://www.linkedin.com/in/javeria-fateh-ab7835368/",
+    "confidence": "medium",
+    "note": "NUST engineering student (Pakistan)"
+  },
+  "Matthew Chow": {
+    "linkedin_url": "https://www.linkedin.com/in/mchowcl/",
+    "confidence": "medium",
+    "note": "Common name; UWaterloo + Ottawa federal co-op"
+  },
+  "Sanjana Rathore": {
+    "linkedin_url": "https://www.linkedin.com/in/sanjana-rathore/",
+    "confidence": "medium",
+    "note": "Common name; CS+math @ UCLA, ML intern"
+  },
+  "Panchami V C": {
+    "linkedin_url": "https://www.linkedin.com/in/panchami-v-65887a427/",
+    "confidence": "medium",
+    "note": "CS engineering student (Bengaluru); C initial unverified"
+  }
+}

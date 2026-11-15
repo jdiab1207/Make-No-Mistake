@@ -118,6 +118,15 @@ def all_embeddings() -> list[tuple[dict[str, Any], np.ndarray]]:
         return out
 
 
+def update_judge_photo(judge_id: int, photo_path: str) -> None:
+    with connect() as conn:
+        conn.execute(
+            "UPDATE judges SET photo_path = ? WHERE id = ?",
+            (photo_path, judge_id),
+        )
+        conn.commit()
+
+
 def update_judge_profile(
     judge_id: int,
     *,

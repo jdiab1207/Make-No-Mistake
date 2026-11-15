@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Static export for reliable Netlify hosting (UI is client-side; API is separate).
+  output: "export",
+  images: { unoptimized: true },
   transpilePackages: [
     "open-makeup-sdk",
     "three",

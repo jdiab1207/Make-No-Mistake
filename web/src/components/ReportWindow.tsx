@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { API_BASE, type ScanResponse } from "@/lib/api";
 import { useDraggable } from "@/hooks/useDraggable";
+import SellDataTerminal from "./SellDataTerminal";
 
 type Props = {
   result: ScanResponse;
@@ -17,13 +19,27 @@ function MetricBar({ label, value }: { label: string; value: number }) {
     <div className="nt-metric">
       <div className="nt-metric__row">
         <span>{label}</span>
-        <span>{v}</span>
+        <span className="nt-metric__value">{v}</span>
       </div>
       <div className="nt-metric__track">
         <div className="nt-metric__fill" style={{ width: `${v}%` }} />
       </div>
     </div>
   );
+}
+
+function sourceLabel(source?: string) {
+  switch (source) {
+    case "judges_db":
+    case "judges_db_soft":
+      return "Gallery match";
+    case "web_identity":
+      return "Web identity";
+    case "camera_only":
+      return "Camera only";
+    default:
+      return source || "Unknown";
+  }
 }
 
 export default function ReportWindow({
@@ -36,6 +52,7 @@ export default function ReportWindow({
   const grade = result.grade;
   const person = result.person;
   const drag = useDraggable({ x: 0, y: 0 });
+  const [sellOpen, setSellOpen] = useState(false);
   if (!grade) return null;
 
   const name =
@@ -43,11 +60,14 @@ export default function ReportWindow({
       ? person.display_name
       : "Unknown Subject";
 
+  const cameraOnly = result.matchSource === "camera_only";
   const photoSrc = person?.photoUrl
     ? person.photoUrl.startsWith("http")
       ? person.photoUrl
       : `${API_BASE}${person.photoUrl}`
-    : captureUrl || null;
+    : cameraOnly
+      ? captureUrl || null
+      : null;
 
   const tags = grade.vibe_tags?.length ? grade.vibe_tags : grade.signals.slice(0, 4);
   const strengths = grade.strengths?.length ? grade.strengths : ["Still compiling…"];
@@ -58,6 +78,7 @@ export default function ReportWindow({
     main_character: 50,
     corporate: 40,
   };
+  const confidencePct = Math.round((grade.confidence ?? 0) * 100);
 
   return (
     <div
@@ -68,7 +89,7 @@ export default function ReportWindow({
       onPointerDownCapture={onActivate}
     >
       <div className="title-bar nt-drag-bar" onPointerDown={drag.onPointerDown}>
-        <div className="title-bar-text">Aura Report - [{grade.label}]</div>
+        <div className="title-bar-text">Aura Report — {grade.label}</div>
         <div className="title-bar-controls">
           <button type="button" aria-label="Minimize" />
           <button type="button" aria-label="Maximize" />
@@ -81,7 +102,7 @@ export default function ReportWindow({
           <div className="nt-report-avatar">
             {photoSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoSrc} alt={name} />
+              <img src={photoSrc} alt={name} referrerPolicy="no-referrer" />
             ) : (
               <div className="nt-report-avatar__empty">?</div>
             )}
@@ -92,67 +113,67 @@ export default function ReportWindow({
             {person?.linkedin_headline && (
               <div className="nt-report-headline">{person.linkedin_headline}</div>
             )}
-            <div className="nt-report-score">
-              {grade.label} · {grade.score}/100
+            <div className="nt-report-meta">
+              <span>{sourceLabel(result.matchSource)}</span>
+              <span>·</span>
+              <span>{confidencePct}% conf.</span>
             </div>
+          </div>
+          <div className="nt-report-scorebox" title={`${grade.verdict} · ${grade.score}/100`}>
+            <div className="nt-report-scorebox__num">{grade.score}</div>
+            <div className="nt-report-scorebox__label">{grade.label}</div>
           </div>
         </div>
 
-        <div className="nt-report-field">
-          <div className="nt-report-label">Summary</div>
-          <p>{grade.summary ?? grade.roast}</p>
-        </div>
+        {(grade.one_liner || grade.roast) && (
+          <div className="nt-report-banner">{grade.one_liner ?? grade.roast}</div>
+        )}
 
-        <div className="nt-report-field">
-          <div className="nt-report-label">One-liner</div>
-          <p className="nt-report-oneliner">{grade.one_liner ?? grade.roast}</p>
-        </div>
+        <fieldset className="nt-report-section">
+          <legend>Who</legend>
+          <p>{grade.summary ?? "Subject scanned."}</p>
+        </fieldset>
 
-        <div className="nt-report-field">
-          <div className="nt-report-label">Hard truth</div>
-          <p>{grade.roast}</p>
-        </div>
+        <fieldset className="nt-report-section">
+          <legend>Hard truth</legend>
+          <p className="nt-report-roast">{grade.roast}</p>
+        </fieldset>
 
         <div className="nt-report-split">
-          <div className="nt-report-field">
-            <div className="nt-report-label">Strengths</div>
+          <fieldset className="nt-report-section">
+            <legend>Strengths</legend>
             <ul>
               {strengths.map((s) => (
                 <li key={s}>{s}</li>
               ))}
             </ul>
-          </div>
-          <div className="nt-report-field">
-            <div className="nt-report-label">Red flags</div>
+          </fieldset>
+          <fieldset className="nt-report-section">
+            <legend>Red flags</legend>
             <ul>
               {flags.map((s) => (
                 <li key={s}>{s}</li>
               ))}
             </ul>
-          </div>
+          </fieldset>
         </div>
 
-        <div className="nt-report-field">
-          <div className="nt-report-label">Career read</div>
+        <fieldset className="nt-report-section">
+          <legend>Career read</legend>
           <p>{grade.career_read}</p>
-        </div>
+        </fieldset>
 
-        <div className="nt-report-field">
-          <div className="nt-report-label">Hackathon fit</div>
-          <p>{grade.compatibility}</p>
-        </div>
-
-        <div className="nt-report-field">
-          <div className="nt-report-label">Metrics</div>
+        <fieldset className="nt-report-section">
+          <legend>Metrics</legend>
           <MetricBar label="Authenticity" value={metrics.authenticity} />
           <MetricBar label="LinkedIn density" value={metrics.linkedin_density} />
           <MetricBar label="Main character" value={metrics.main_character} />
           <MetricBar label="Corporate" value={metrics.corporate} />
-        </div>
+        </fieldset>
 
         {tags.length > 0 && (
-          <div className="nt-report-field">
-            <div className="nt-report-label">Vibe tags</div>
+          <fieldset className="nt-report-section">
+            <legend>Vibe</legend>
             <div className="nt-report-tags">
               {tags.map((t) => (
                 <span key={t} className="nt-report-tag">
@@ -160,7 +181,7 @@ export default function ReportWindow({
                 </span>
               ))}
             </div>
-          </div>
+          </fieldset>
         )}
 
         {person?.linkedin_url && (
@@ -170,10 +191,29 @@ export default function ReportWindow({
             target="_blank"
             rel="noreferrer"
           >
-            Open LinkedIn
+            Open LinkedIn profile →
           </a>
         )}
       </div>
+
+      <div className="nt-report-footer">
+        <button
+          type="button"
+          className="default nt-sell-btn"
+          onClick={() => setSellOpen(true)}
+        >
+          Sell Data
+        </button>
+      </div>
+
+      {sellOpen && (
+        <SellDataTerminal
+          subjectName={name}
+          zIndex={(zIndex ?? 4) + 10}
+          onActivate={onActivate}
+          onClose={() => setSellOpen(false)}
+        />
+      )}
     </div>
   );
 }

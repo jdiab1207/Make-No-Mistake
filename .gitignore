@@ -1,0 +1,45 @@
+# Local Netlify
+.netlify
+
+# Secrets & env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.onnx
+.insightface/
+
+# Node
+node_modules/
+web/out/
+web/.next/
+
+# Local face gallery / DB (enrolled photos stay on the machine)
+backend/data/aura.db
+backend/data/judges.db
+backend/data/judges/*
+!backend/data/judges/.gitkeep
+backend/data/bulk_tmp/
+backend/data/bing_*.html
+backend/data/bulk_enroll_report.json
+
+# One-off debug scripts (leading underscore)
+backend/scripts/_*.py
+
+# Personal / ad-hoc face JPEGs dropped in the repo root
+/*.jpeg
+/*.jpg
+/web/*.jpeg
+/web/*.jpg
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

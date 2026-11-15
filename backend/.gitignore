@@ -7,5 +7,9 @@ data/aura.db
 data/judges.db
 data/judges/*
 !data/judges/.gitkeep
+data/bulk_tmp/
+data/bing_*.html
+data/bulk_enroll_report.json
+scripts/_*.py
 *.onnx
 .insightface/

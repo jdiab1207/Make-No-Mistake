@@ -1,6 +1,10 @@
-# Aura Scanner — Backend
+# Aura Tracker — Backend
 
-Face recognition (InsightFace / ArcFace) → match enrolled people → pull LinkedIn signals → **DeepSeek** hard-truth grade (larper / try-hard / aura).
+FastAPI service: **face match (InsightFace)** → enrolled gallery (SQLite) → **DeepSeek** LinkedIn roast/score.
+
+Local face images and the SQLite DB live under `data/` and are **gitignored**.
+
+---
 
 ## Setup
 
@@ -19,45 +23,117 @@ copy .env.example .env   # Windows
 # cp .env.example .env   # macOS / Linux
 ```
 
-Put your DeepSeek key in `.env`:
+`.env` essentials:
 
 ```env
 DEEPSEEK_API_KEY=sk-...
 DEEPSEEK_MODEL=deepseek-chat
+# Optional: allow Netlify / other frontends
+CORS_ORIGINS=https://make-no-mistake-aura.netlify.app
+FACE_MATCH_THRESHOLD=0.40
 ```
 
-## Seed + test (run this first)
+---
+
+## Run
 
 ```bash
-cd backend
-python scripts/seed_and_test.py
-```
-
-This downloads a sample face, enrolls a fake LinkedIn “thought leader”, matches the face with InsightFace, then calls DeepSeek for a roast/score.
-
-## Run API
-
-```bash
-cd backend
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- Health: http://127.0.0.1:8000/health  
-- Docs: http://127.0.0.1:8000/docs  
+| URL | Purpose |
+|-----|---------|
+| http://127.0.0.1:8000/health | Status + enrolled count |
+| http://127.0.0.1:8000/docs | OpenAPI |
 
-### Endpoints
+Smoke test:
+
+```bash
+python scripts/seed_and_test.py
+```
+
+---
+
+## Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| GET | `/health` | Status + judge count |
+| GET | `/health` | Config flags + judge count |
 | GET | `/judges` | List enrolled people |
-| POST | `/enroll` | multipart: photo + name + LinkedIn fields |
-| POST | `/scan` | multipart: photo → match → DeepSeek grade |
+| GET | `/judges/{id}/photo` | Face image |
+| GET | `/photo/remote?url=` | Proxy LinkedIn CDN images |
+| POST | `/enroll` | multipart photo + profile fields |
+| POST | `/scan` | multipart photo → match → grade |
 
-## Flow
+### `POST /enroll` fields
 
-1. **Enroll** judges (or attendees) with a face photo + LinkedIn headline/about text (and URL).
-2. **Scan** a webcam still → InsightFace embedding → nearest neighbor in SQLite gallery.
-3. On hit, DeepSeek grades LinkedIn copy for larper / try-hard / aura and returns score + roast.
+- `photo` (file, required) — face must be detectable  
+- `display_name`, `role` (`judge` / `participant`)  
+- `linkedin_url`, `linkedin_headline`, `linkedin_about`, `linkedin_experience`  
 
-LinkedIn HTML scraping is intentionally **not** required for v1 — store public headline/about at enroll time (or paste). That keeps demos reliable and ToS-safer.
+LinkedIn OG scrape is best-effort (profiles are often authwalled). Paste headline/about when OG is empty.
+
+---
+
+## Bulk participant import
+
+For hackathon participant lists:
+
+1. Put confident LinkedIn URLs in `data/participants_linkedin_map.json`:
+
+```json
+{
+  "Rieley Hunt": {
+    "linkedin_url": "https://www.linkedin.com/in/rieleyhunt/",
+    "confidence": "high",
+    "note": "Carleton CS"
+  }
+}
+```
+
+2. Optional name list: `scripts/participants_bulk.txt`
+
+3. Enroll (requires fetchable **real** headshot — unavatar LinkedIn JPEG preferred):
+
+```bash
+python scripts/enroll_from_map.py
+```
+
+| Script | Role |
+|--------|------|
+| `scripts/enroll_from_map.py` | Enroll from the JSON map + photo fetch |
+| `scripts/bulk_enroll_participants.py` | Name → search → enroll (search engines often blocked) |
+| `scripts/participants_bulk.txt` | Parsed participant names |
+
+**Safety:** Do not use generic web image search as a face source. Wrong-person enrollments break the demo and the roast.
+
+Public photo sources that have worked intermittently:
+
+- `https://unavatar.io/linkedin/{slug}` when it returns a real JPEG (not SVG placeholder)  
+- Manual Devpost / LinkedIn screenshots  
+
+---
+
+## Modules
+
+| Module | Role |
+|--------|------|
+| `app/main.py` | Routes, CORS, scan/enroll waterfall |
+| `app/face_match.py` | InsightFace + fallbacks |
+| `app/db.py` | SQLite gallery + embeddings |
+| `app/grader.py` | DeepSeek prompts / scoring |
+| `app/linkedin_lookup.py` | OG tags + CDN photo download |
+| `app/web_identity.py` | Best-effort reverse image / name search |
+| `app/config.py` | Env + paths |
+
+---
+
+## Data directory
+
+```
+data/
+  aura.db          # gitignored
+  judges/          # enrolled face files (gitignored)
+  participants_linkedin_map.json   # optional URL map (safe to commit)
+  bulk_tmp/        # gitignored download cache
+```

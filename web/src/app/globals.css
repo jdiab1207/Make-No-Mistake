@@ -51,12 +51,12 @@ body {
 
 .nt-workspace {
   position: relative;
-  width: min(640px, calc(100vw - 32px));
+  width: min(780px, calc(100vw - 32px));
 }
 
 .nt-camera-window {
   width: 100%;
-  max-width: 640px;
+  max-width: 780px;
   margin: 0;
   position: relative;
   z-index: 1;
@@ -76,29 +76,47 @@ body {
 .nt-report-window {
   position: absolute;
   top: -36px;
-  right: -132px;
-  width: min(340px, 54vw);
-  max-height: min(78vh, 640px);
+  right: -280px;
+  width: min(380px, 58vw);
+  max-height: min(82vh, 700px);
   display: flex;
   flex-direction: column;
 }
 
 .nt-report-window > .window-body {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  max-height: min(70vh, 560px);
+  max-height: none;
+}
+
+.nt-report-footer {
+  flex: 0 0 auto;
+  margin: 0 6px 6px;
+  padding-top: 4px;
+  background: silver;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+
+@media (max-width: 1100px) {
+  .nt-report-window {
+    right: -160px;
+  }
 }
 
 @media (max-width: 900px) {
   .nt-report-window {
-    right: -20px;
+    right: -24px;
     top: -12px;
-    width: min(300px, 78vw);
+    width: min(320px, 82vw);
   }
 }
 
 .nt-report-body {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .nt-report-header {
@@ -108,9 +126,9 @@ body {
 }
 
 .nt-report-avatar {
-  flex: 0 0 64px;
-  width: 64px;
-  height: 64px;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   overflow: hidden;
   background: #000;
@@ -160,39 +178,91 @@ body {
   line-height: 1.3;
 }
 
-.nt-report-score {
-  margin-top: 6px;
+.nt-report-meta {
+  margin-top: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 10px;
+  color: #555;
+}
+
+.nt-report-scorebox {
+  flex: 0 0 auto;
+  min-width: 64px;
+  text-align: center;
+  padding: 4px 6px 5px;
+  background: #fff;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+}
+
+.nt-report-scorebox__num {
   font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
-  font-size: 11px;
+  font-size: 22px;
   font-weight: 700;
-  color: #000;
+  line-height: 1;
+  color: #000080;
 }
 
-.nt-report-field {
+.nt-report-scorebox__label {
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #000;
+  max-width: 72px;
+  line-height: 1.15;
+}
+
+.nt-report-banner {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #000;
+  background: #ffffe1;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+}
+
+.nt-report-section {
+  margin: 0;
+  padding: 6px 8px 8px;
+  border: none;
   font-size: 11px;
   color: #000;
-  line-height: 1.35;
+  line-height: 1.4;
+  background: #fff;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
 }
 
-.nt-report-field p {
-  margin: 4px 0 0;
-}
-
-.nt-report-field ul {
-  margin: 4px 0 0;
-  padding-left: 16px;
-}
-
-.nt-report-label {
+.nt-report-section legend {
+  padding: 0 4px;
   font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
   font-size: 10px;
   font-weight: 700;
-  color: #555;
+  color: #000080;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.nt-report-oneliner {
+.nt-report-section p {
+  margin: 0;
+}
+
+.nt-report-section ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.nt-report-section li + li {
+  margin-top: 2px;
+}
+
+.nt-report-roast {
   font-weight: 700;
 }
 
@@ -203,7 +273,7 @@ body {
 }
 
 .nt-metric {
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .nt-metric__row {
@@ -211,6 +281,11 @@ body {
   justify-content: space-between;
   font-size: 10px;
   margin-bottom: 2px;
+}
+
+.nt-metric__value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .nt-metric__track {
@@ -229,7 +304,6 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 4px;
 }
 
 .nt-report-tag {
@@ -244,7 +318,183 @@ body {
   display: inline-block;
   margin-top: 2px;
   font-size: 11px;
+  font-weight: 700;
   color: #000080;
+}
+
+.nt-sell-btn {
+  display: block;
+  width: 100%;
+  margin: 0;
+  min-height: 40px;
+  font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nt-sell-window {
+  position: fixed;
+  top: 10vh;
+  left: max(12px, 3vw);
+  width: min(560px, 92vw);
+  max-height: min(78vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+
+.nt-sell-window--glitch .nt-sell-screen {
+  animation: nt-sell-glitch 0.18s steps(2, end) 2;
+}
+
+@keyframes nt-sell-glitch {
+  0% {
+    filter: none;
+  }
+  25% {
+    filter: hue-rotate(90deg) contrast(1.45) saturate(1.6);
+  }
+  50% {
+    filter: invert(0.12) contrast(1.3);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+.nt-sell-body {
+  display: grid;
+  gap: 8px;
+  margin: 6px;
+}
+
+.nt-sell-screen {
+  position: relative;
+  overflow: auto;
+  min-height: 280px;
+  max-height: min(58vh, 480px);
+  padding: 10px 12px 14px;
+  background: #020802;
+  color: #33ff66;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf,
+    inset 2px 2px #0a0a0a;
+}
+
+.nt-sell-rain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.22;
+}
+
+.nt-sell-rain__col {
+  position: absolute;
+  top: -120%;
+  white-space: pre;
+  font-size: 11px;
+  line-height: 1.1;
+  color: #1aff55;
+  animation-name: nt-sell-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes nt-sell-fall {
+  to {
+    transform: translateY(220%);
+  }
+}
+
+.nt-sell-scanline {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+.nt-sell-log,
+.nt-sell-ascii,
+.nt-sell-ascii-wrap {
+  background: transparent;
+}
+
+.nt-sell-log {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.nt-sell-cursor {
+  display: inline-block;
+  animation: nt-sell-blink 0.7s steps(1, end) infinite;
+}
+
+@keyframes nt-sell-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.nt-sell-ascii-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  text-align: center;
+  animation: nt-sell-pop 0.45s ease-out;
+}
+
+@keyframes nt-sell-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: none;
+  }
+}
+
+.nt-sell-ascii {
+  margin: 0;
+  display: inline-block;
+  text-align: left;
+  color: #ffffff;
+  background: transparent;
+  text-shadow: none;
+  font-size: clamp(7px, 1.55vw, 11px);
+  line-height: 1.05;
+  font-weight: 700;
+  -webkit-text-fill-color: #ffffff;
+}
+
+.nt-sell-ascii-sub {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #ffffff;
+  background: transparent;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nt-sell-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .nt-camera-window .window-body {
@@ -316,6 +566,22 @@ body {
   visibility: hidden;
 }
 
+.nt-face-warp {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  pointer-events: none;
+  z-index: 1;
+  image-rendering: auto;
+}
+
+.nt-face-warp.is-frozen {
+  visibility: hidden;
+}
+
 .nt-camera-freeze {
   position: absolute;
   inset: 0;
@@ -324,23 +590,12 @@ body {
   object-fit: cover;
   background: #000;
   display: none;
-  z-index: 1;
+  z-index: 2;
   image-rendering: auto;
 }
 
 .nt-camera-freeze.is-visible {
   display: block;
-}
-
-.nt-aura-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-  image-rendering: auto;
-  mix-blend-mode: screen;
 }
 
 /* Retro pixel scan overlay (during freeze/scan) */
@@ -439,6 +694,114 @@ body {
   font-size: 11px;
   color: #000;
   z-index: 2;
+}
+
+.nt-meme-popup {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 100;
+  pointer-events: none;
+  animation: nt-meme-pop-in 220ms ease-out;
+}
+
+.nt-meme-popup__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 210px;
+  padding: 20px 10px 10px;
+  color: #000;
+  background: silver;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  pointer-events: auto;
+}
+
+.nt-meme-popup__card strong {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.nt-meme-popup__card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 168px;
+  object-fit: contain;
+}
+
+.nt-meme-popup__card img.nt-meme-popup__static {
+  animation: nt-meme-bounce 700ms steps(2, end) infinite;
+  transform-origin: center;
+}
+
+@keyframes nt-meme-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nt-meme-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg) scale(0.98);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg) scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nt-meme-popup {
+    animation: none;
+  }
+
+  .nt-meme-popup__card img.nt-meme-popup__static {
+    animation: none;
+  }
+}
+
+.nt-meme-popup__close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  min-height: 16px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.nt-meme-popup--sell {
+  z-index: 10050;
+  right: 20px;
+  bottom: 44px;
+  animation: nt-meme-pop-in 280ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.nt-meme-popup--sell .nt-meme-popup__card {
+  width: 230px;
+  background: #c0c0c0;
+  outline: 2px solid #008080;
+}
+
+.nt-meme-popup--sell .nt-meme-popup__card strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.nt-meme-popup--sell .nt-meme-popup__card img {
+  max-height: 180px;
 }
 
 .nt-camera-well__placeholder {

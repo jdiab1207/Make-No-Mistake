@@ -1,27 +1,34 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import quote, unquote
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+import httpx
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 
 from . import config
-from .db import enroll_judge, get_judge, init_db, list_judges
+from .db import enroll_judge, get_judge, init_db, list_judges, update_judge_photo
 from .face_match import embed_face, match_face, read_bgr
 from .grader import grade_camera_only, grade_linkedin_profile
-from .linkedin_lookup import lookup_linkedin
+from .linkedin_lookup import download_linkedin_photo, is_linkedin_cdn, lookup_linkedin
 from .web_identity import identify_from_face
 
 app = FastAPI(title="Aura Scanner Backend", version="0.1.0")
+
+_CORS_DEFAULT = [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://make-no-mistake-aura.netlify.app",
+]
+_extra = [o.strip() for o in config.CORS_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=[*_CORS_DEFAULT, *_extra],
+    allow_origin_regex=r"https://.*\.netlify\.app",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,6 +71,64 @@ def _photo_url(judge_id: int | None) -> str | None:
     if judge_id is None:
         return None
     return f"/judges/{int(judge_id)}/photo"
+
+
+def _cache_linkedin_photo(profile: dict, judge_id: int | None) -> None:
+    """If we have a LinkedIn CDN image + judge id, store it as the gallery photo."""
+    url = (profile.get("linkedin_photo_url") or "").strip()
+    if not judge_id or not url or not is_linkedin_cdn(url):
+        return
+    name = profile.get("display_name") or f"judge_{judge_id}"
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)[:40]
+    dest = config.JUDGES_DIR / f"{safe}_linkedin.jpg"
+    if download_linkedin_photo(url, dest):
+        try:
+            update_judge_photo(int(judge_id), str(dest))
+            profile["photo_path"] = str(dest)
+        except Exception:
+            pass
+
+
+def _report_photo_url(profile: dict, judge_id: int | None = None) -> str | None:
+    """Prefer LinkedIn profile picture (proxied); fall back to enrolled gallery photo."""
+    linkedin_photo = (profile.get("linkedin_photo_url") or "").strip()
+    if linkedin_photo.startswith("http"):
+        if is_linkedin_cdn(linkedin_photo):
+            return f"/photo/remote?url={quote(linkedin_photo, safe='')}"
+        return linkedin_photo
+    jid = judge_id if judge_id is not None else profile.get("id")
+    return _photo_url(jid)
+
+
+@app.get("/photo/remote")
+def remote_photo(url: str = Query(..., min_length=8)):
+    """Proxy LinkedIn CDN images so the report avatar can load them reliably."""
+    target = unquote(url).strip()
+    if not is_linkedin_cdn(target):
+        raise HTTPException(status_code=400, detail="Only LinkedIn CDN images allowed")
+    try:
+        resp = httpx.get(
+            target,
+            follow_redirects=True,
+            timeout=15.0,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/121.0.0.0 Safari/537.36"
+                ),
+                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                "Referer": "https://www.linkedin.com/",
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Photo fetch failed: {e}") from e
+    if resp.status_code >= 400 or not resp.content:
+        raise HTTPException(status_code=502, detail="Photo unavailable")
+    ctype = resp.headers.get("content-type") or "image/jpeg"
+    if "image" not in ctype.lower():
+        ctype = "image/jpeg"
+    return Response(content=resp.content, media_type=ctype)
 
 
 @app.post("/enroll")
@@ -131,6 +196,8 @@ def _enrich_linkedin(profile: dict) -> dict:
         out["linkedin_headline"] = out.get("linkedin_headline") or og["linkedin_headline"]
     if og.get("linkedin_about"):
         out["linkedin_about"] = out.get("linkedin_about") or og["linkedin_about"]
+    if og.get("og_image"):
+        out["linkedin_photo_url"] = og["og_image"]
     if og.get("og_title") and (
         not out.get("display_name") or out.get("display_name") == "Unknown"
     ):
@@ -146,9 +213,15 @@ def _auto_enroll(raw: bytes, img, profile: dict, embedding) -> int | None:
     try:
         name = profile.get("display_name") or "web_identity"
         safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)[:40]
-        dest = config.JUDGES_DIR / f"{safe}_web.jpg"
-        if raw:
-            dest.write_bytes(raw)
+        li_url = (profile.get("linkedin_photo_url") or "").strip()
+        dest = config.JUDGES_DIR / f"{safe}_linkedin.jpg"
+        wrote_li = bool(li_url and download_linkedin_photo(li_url, dest))
+        if not wrote_li:
+            dest = config.JUDGES_DIR / f"{safe}_web.jpg"
+            if raw:
+                dest.write_bytes(raw)
+            else:
+                return None
         return enroll_judge(
             display_name=name,
             role="web_enroll",
@@ -224,6 +297,7 @@ async def scan(photo: UploadFile = File(...)):
     if match_result.get("matched") and match_result.get("best"):
         best = match_result["best"]
         profile = _enrich_linkedin(best)
+        _cache_linkedin_photo(profile, best.get("id"))
         grade = _grade_or_502(profile)
         tier = match_result.get("matchTier") or "strict"
         return {
@@ -236,7 +310,7 @@ async def scan(photo: UploadFile = File(...)):
                 "role": best["role"],
                 "linkedin_url": profile.get("linkedin_url"),
                 "linkedin_headline": profile.get("linkedin_headline"),
-                "photoUrl": _photo_url(best.get("id")),
+                "photoUrl": _report_photo_url(profile, best.get("id")),
                 "distance": best["distance"],
                 "confidence": best["confidence"],
             },
@@ -261,6 +335,7 @@ async def scan(photo: UploadFile = File(...)):
         enrolled_id = None
         if embedding is not None:
             enrolled_id = _auto_enroll(raw, img, profile, embedding)
+        _cache_linkedin_photo(profile, enrolled_id)
         grade = _grade_or_502(profile)
         return {
             "matched": True,
@@ -272,7 +347,7 @@ async def scan(photo: UploadFile = File(...)):
                 "role": "web_identity",
                 "linkedin_url": profile.get("linkedin_url"),
                 "linkedin_headline": profile.get("linkedin_headline"),
-                "photoUrl": _photo_url(enrolled_id),
+                "photoUrl": _report_photo_url(profile, enrolled_id),
                 "distance": None,
                 "confidence": 0.45,
             },

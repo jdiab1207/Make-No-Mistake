@@ -12,6 +12,8 @@ DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 
 HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", "8000"))
+# Comma-separated extra browser origins allowed to call the API
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "")
 
 # InsightFace cosine distance: lower = more similar. ~0.3–0.4 is typical.
 FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.40"))

@@ -1,4 +1,4 @@
-/** Score → aura color (matches AURA_TRACKER_PLAN taxonomy). */
+/** Score → continuous aura color: red (bad) → orange (mid) → green (good). */
 
 export type AuraPalette = {
   core: string;
@@ -7,28 +7,66 @@ export type AuraPalette = {
   label: string;
 };
 
+type RGB = [number, number, number];
+
+const BAD: RGB = [255, 36, 36]; // red
+const MID: RGB = [255, 140, 24]; // orange
+const GOOD: RGB = [24, 220, 96]; // green
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function mix(a: RGB, b: RGB, t: number): RGB {
+  const u = Math.max(0, Math.min(1, t));
+  return [
+    Math.round(lerp(a[0], b[0], u)),
+    Math.round(lerp(a[1], b[1], u)),
+    Math.round(lerp(a[2], b[2], u)),
+  ];
+}
+
+/** Map 0–100 → RGB along red → orange → green. */
+export function auraRgbForScore(score: number): RGB {
+  const s = Math.max(0, Math.min(100, score));
+  if (s <= 50) {
+    return mix(BAD, MID, s / 50);
+  }
+  return mix(MID, GOOD, (s - 50) / 50);
+}
+
+function lighten(rgb: RGB, amount: number): RGB {
+  return mix(rgb, [255, 255, 255], amount);
+}
+
+function rgba(rgb: RGB, alpha: number) {
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
+}
+
+function hex(rgb: RGB) {
+  return `#${rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function labelForScore(s: number): string {
+  if (s <= 15) return "Cooked";
+  if (s <= 30) return "NPC";
+  if (s <= 45) return "Glazer";
+  if (s <= 55) return "Mid";
+  if (s <= 70) return "Aura Farming";
+  if (s <= 85) return "Aura";
+  if (s <= 95) return "Max Aura";
+  return "Mythic";
+}
+
 export function auraPaletteForScore(score: number): AuraPalette {
-  const s = Math.max(0, Math.min(100, Math.round(score)));
-  if (s <= 15) {
-    return { core: "#9a9a9a", glow: "rgba(140,140,140,0.95)", rim: "#d0d0d0", label: "Cooked" };
-  }
-  if (s <= 30) {
-    return { core: "#b0b0b0", glow: "rgba(170,170,170,0.95)", rim: "#ececec", label: "NPC" };
-  }
-  if (s <= 45) {
-    return { core: "#ff2d95", glow: "rgba(255,80,180,0.95)", rim: "#ffb0de", label: "Glazer" };
-  }
-  if (s <= 55) {
-    return { core: "#e0b060", glow: "rgba(230,180,90,0.95)", rim: "#ffe0a8", label: "Mid" };
-  }
-  if (s <= 70) {
-    return { core: "#00ff7a", glow: "rgba(0,255,130,0.95)", rim: "#9affc8", label: "Aura Farming" };
-  }
-  if (s <= 85) {
-    return { core: "#ffd000", glow: "rgba(255,210,40,0.95)", rim: "#fff3a0", label: "Aura" };
-  }
-  if (s <= 95) {
-    return { core: "#ffbf00", glow: "rgba(255,200,0,0.98)", rim: "#fff6c0", label: "Max Aura" };
-  }
-  return { core: "#d070ff", glow: "rgba(220,100,255,0.98)", rim: "#ff7ad9", label: "Mythic" };
+  const s = Math.max(0, Math.min(100, score));
+  const base = auraRgbForScore(s);
+  const bright = lighten(base, 0.28);
+  const soft = lighten(base, 0.55);
+  return {
+    core: hex(bright),
+    glow: rgba(base, 0.96),
+    rim: hex(soft),
+    label: labelForScore(s),
+  };
 }
