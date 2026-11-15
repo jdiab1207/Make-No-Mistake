@@ -176,12 +176,17 @@ body {
 }
 
 .nt-scan-btn {
-  min-width: 200px;
-  min-height: 40px;
-  padding: 8px 28px;
-  font-size: 14px;
-  font-weight: 700;
+  min-width: 240px !important;
+  min-height: 40px !important;
+  padding: 0 32px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
   letter-spacing: 0.02em;
+}
+
+.nt-scan-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .nt-taskbar {

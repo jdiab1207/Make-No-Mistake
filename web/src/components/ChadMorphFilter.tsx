@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { OpenMakeup } from "open-makeup-sdk";
 import {
   CHAD_MORPH,
@@ -11,31 +11,43 @@ import {
 import { loadMediapipeScripts } from "@/lib/loadMediapipeScripts";
 
 type Props = {
-  active: boolean;
   onStatus?: (status: "loading" | "ready" | "error", detail?: string) => void;
 };
 
 /**
- * Live face reshape via open-makeup-sdk (MediaPipe FaceMesh + WebGL morph).
- * Warps the webcam face toward Chad proportions — not an image overlay.
+ * Always-on live face reshape via open-makeup-sdk.
+ * Warps the webcam face toward Chad proportions — not a photo overlay.
  */
-export default function ChadMorphFilter({ active, onStatus }: Props) {
+export default function ChadMorphFilter({ onStatus }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const makeupRef = useRef<OpenMakeup | null>(null);
-  const [ready, setReady] = useState(false);
+  const onStatusRef = useRef(onStatus);
+  onStatusRef.current = onStatus;
 
   useEffect(() => {
-    if (!active) return;
-
     let cancelled = false;
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    const stage = stageRef.current;
     if (!video || !canvas) return;
 
+    function sizeCanvas() {
+      if (!canvas || !stage) return;
+      const rect = stage.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width) || 640);
+      const h = Math.max(240, Math.floor(rect.height) || 480);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+    }
+
     async function boot() {
-      onStatus?.("loading");
+      onStatusRef.current?.("loading");
       try {
+        sizeCanvas();
         await loadMediapipeScripts();
         if (cancelled || !video || !canvas) return;
 
@@ -53,38 +65,35 @@ export default function ChadMorphFilter({ active, onStatus }: Props) {
           return;
         }
 
+        sizeCanvas();
         mk.engine.morphGain = CHAD_MORPH_GAIN;
         mk.morph(CHAD_MORPH);
         mk.clearAll();
+        mk.start();
 
         makeupRef.current = mk;
-        setReady(true);
-        onStatus?.("ready");
+        onStatusRef.current?.("ready");
       } catch (err) {
         const detail = err instanceof Error ? err.message : "init failed";
-        onStatus?.("error", detail);
+        onStatusRef.current?.("error", detail);
       }
     }
 
     void boot();
 
+    const onResize = () => sizeCanvas();
+    window.addEventListener("resize", onResize);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("resize", onResize);
       makeupRef.current?.dispose();
       makeupRef.current = null;
-      setReady(false);
     };
-  }, [active, onStatus]);
-
-  useEffect(() => {
-    const mk = makeupRef.current;
-    if (!mk || !ready) return;
-    if (active) mk.start();
-    else mk.stop();
-  }, [active, ready]);
+  }, []);
 
   return (
-    <div className="nt-morph-stage">
+    <div className="nt-morph-stage" ref={stageRef}>
       <video
         ref={videoRef}
         className="nt-camera-well__source"

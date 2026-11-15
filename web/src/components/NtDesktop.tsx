@@ -54,7 +54,7 @@ export default function NtDesktop() {
         </button>
         <div className="nt-taskbar__divider" />
         <button type="button" className="nt-taskbar__window-btn">
-          Aura Scanner - [Chad Morph Filter]
+          Aura Scanner - [Live Camera]
         </button>
         <div className="nt-taskbar__tray" title={now ? now.toLocaleString() : undefined}>
           {now ? formatTrayTime(now) : "--:--"}
