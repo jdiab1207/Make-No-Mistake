@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/aura.db
+data/judges.db
+data/judges/*
+!data/judges/.gitkeep
+*.onnx
+.insightface/
