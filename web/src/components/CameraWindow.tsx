@@ -12,32 +12,36 @@ type ScanPhase = "idle" | "scanning" | "done";
 type ReactionMeme = { src: string; alt: string; width: number; height: number };
 
 const LOW_AURA_MEMES: ReactionMeme[] = [
-  { src: "/reactions/vigilante.gif", alt: "A serious-looking man", width: 320, height: 320 },
-  { src: "/reactions/ishowspeed-shocked.gif", alt: "A shocked reaction", width: 360, height: 275 },
-  { src: "/reactions/disgusted-cat.png", alt: "A disgusted cat", width: 300, height: 300 },
-  { src: "/reactions/koloboks-yellow-emojis.gif", alt: "Two surprised yellow emoji characters", width: 200, height: 142 },
+  { src: "/reactions/0-25/disgusted-cat.png", alt: "A disgusted cat", width: 300, height: 300 },
+  { src: "/reactions/0-25/giphy.gif", alt: "A man reacting emotionally", width: 320, height: 222 },
+  { src: "/reactions/0-25/ishowspeed-meme.gif", alt: "A shocked reaction", width: 360, height: 275 },
+  { src: "/reactions/0-25/koloboks-yellow-emojis.gif", alt: "Two surprised yellow emoji characters", width: 200, height: 142 },
+  { src: "/reactions/0-25/vigilanteskass.gif", alt: "A serious-looking man", width: 320, height: 320 },
 ];
 
 const MID_AURA_MEMES: ReactionMeme[] = [
-  { src: "/reactions/pepe.gif", alt: "A disappointed Pepe frog", width: 220, height: 220 },
-  { src: "/reactions/sad-cat-crying.png", alt: "A crying pixel cat", width: 348, height: 348 },
-  { src: "/reactions/squidward.gif", alt: "Squidward dancing awkwardly", width: 720, height: 405 },
+  { src: "/reactions/26-50/bearded-reaction.gif", alt: "A bearded man looking upward", width: 220, height: 208 },
+  { src: "/reactions/26-50/surprised-dog.gif", alt: "A surprised-looking dog", width: 640, height: 544 },
+  { src: "/reactions/26-50/cat-reaction.gif", alt: "A cat reaction", width: 220, height: 220 },
+  { src: "/reactions/26-50/giphy.gif", alt: "A man reacting emotionally", width: 320, height: 222 },
+  { src: "/reactions/26-50/mr-bean.gif", alt: "Mr. Bean reacting", width: 350, height: 350 },
 ];
 
 const MID_HIGH_AURA_MEMES: ReactionMeme[] = [
-  { src: "/reactions/cat-rainbow.gif", alt: "A cat flying with a rainbow trail", width: 500, height: 198 },
-  { src: "/reactions/patrick-stars.gif", alt: "Patrick Star looking delighted", width: 200, height: 200 },
-  { src: "/reactions/banana.gif", alt: "A surprised dancing banana", width: 500, height: 530 },
-  { src: "/reactions/jeff.gif", alt: "A pixel-art character dancing", width: 480, height: 384 },
+  { src: "/reactions/51-75/cat-dance.gif", alt: "A dancing cat", width: 220, height: 211 },
+  { src: "/reactions/51-75/cat-clap.gif", alt: "A clapping cat", width: 165, height: 216 },
+  { src: "/reactions/51-75/head-point.gif", alt: "A person pointing", width: 640, height: 538 },
+  { src: "/reactions/51-75/shoulder-dance.gif", alt: "A person dancing with their shoulders", width: 354, height: 324 },
+  { src: "/reactions/51-75/shrek.gif", alt: "Shrek in a dramatic scene", width: 220, height: 247 },
 ];
 
 const HIGH_AURA_MEMES: ReactionMeme[] = [
-  { src: "/reactions/suit-reveal.gif", alt: "A man in a suit making a confident entrance", width: 220, height: 293 },
-  { src: "/reactions/shrek.gif", alt: "Shrek in a dramatic scene", width: 220, height: 247 },
-  { src: "/reactions/goofy-baby.gif", alt: "A goofy baby", width: 360, height: 360 },
-  { src: "/reactions/sonic-wink.gif", alt: "Sonic the Hedgehog winking", width: 320, height: 320 },
-  { src: "/reactions/pixel-character-dance.gif", alt: "A pixel-art character dancing", width: 500, height: 500 },
-  { src: "/reactions/dancing-cat.gif", alt: "A kitten dancing", width: 220, height: 211 },
+  { src: "/reactions/76-100/pixel-character-dance.gif", alt: "A pixel-art character dancing", width: 500, height: 500 },
+  { src: "/reactions/76-100/boat-aura-farming.gif", alt: "A man aura farming on a boat", width: 220, height: 194 },
+  { src: "/reactions/76-100/goofy-baby.gif", alt: "A goofy baby", width: 360, height: 360 },
+  { src: "/reactions/76-100/ishowspeed-award.gif", alt: "iShowSpeed holding an award", width: 498, height: 498 },
+  { src: "/reactions/76-100/sonic-meme.gif", alt: "Sonic the Hedgehog", width: 320, height: 320 },
+  { src: "/reactions/76-100/suit-reveal.gif", alt: "A man in a suit making a confident entrance", width: 220, height: 293 },
 ];
 
 function pickDifferentMeme(
@@ -133,11 +137,11 @@ export default function CameraWindow() {
       if (filter === "original" && auraMode === "off") setTrackingMessage("Loading face tracking…");
       setScanLabel(`Demo score ${output.score}/100 · ${output.preset === "mog" ? "Mog + Fire" : "Not Mog + Fart clouds"} ${Math.round(output.strength * 100)}%`);
       setPopupScore(output.score);
-      if (output.score >= 75) {
+      if (output.score >= 76) {
         setPopupMeme(pickDifferentMeme(HIGH_AURA_MEMES, lastHighPopupIndex));
-      } else if (output.score >= 50) {
+      } else if (output.score >= 51) {
         setPopupMeme(pickDifferentMeme(MID_HIGH_AURA_MEMES, lastMidHighPopupIndex));
-      } else if (output.score >= 25) {
+      } else if (output.score >= 26) {
         setPopupMeme(pickDifferentMeme(MID_AURA_MEMES, lastMidPopupIndex));
       } else {
         setPopupMeme(pickDifferentMeme(LOW_AURA_MEMES, lastLowPopupIndex));
