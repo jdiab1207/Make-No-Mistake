@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import ts from "typescript";
+const auraModule = { exports: {} };
+const auraCode = ts.transpileModule(fs.readFileSync("src/lib/fireAura.ts", "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+new Function("exports", "module", auraCode)(auraModule.exports, auraModule);
 const source = fs.readFileSync("src/lib/faceWarp.ts", "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 const loaded = { exports: {} };
-new Function("exports", "module", compiled)(loaded.exports, loaded);
+new Function("exports", "module", "require", compiled)(loaded.exports, loaded, (specifier) => {
+  assert.equal(specifier, "./fireAura");
+  return auraModule.exports;
+});
 const { buildFaceWarps } = loaded.exports;
 const points = Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5 }));
 Object.assign(points, {
@@ -82,6 +88,7 @@ for (const [score, preset, strength] of [
 ]) {
   const result = scoreToFaceFilter(score);
   assert.equal(result.preset, preset);
+  assert.equal(result.aura, preset === "mog" ? "fire" : "clouds", "Score selects the matching positive or negative aura");
   assert(Math.abs(result.strength - strength) < 1e-9, `Score ${score} maps to ${strength}`);
 }
 assert.equal(scoreToFaceFilter(-5).score, 0);
@@ -97,3 +104,25 @@ for (let score = 60; score < 100; score++) {
 }
 assert(scoreToFaceFilter(59.5).strength >= 0.5, "Fractional scores below 60 keep at least 50% Not Mog");
 console.log("Score-to-filter checks passed");
+const { personMaskFromConfidence, auraColorRgb } = auraModule.exports;
+const { cloudHeadBounds } = auraModule.exports;
+assert.equal(cloudHeadBounds([]), undefined, "No face means no head clouds");
+const head = cloudHeadBounds(points);
+assert(head && head[2] > 0 && head[3] > 0, "Cloud envelope surrounds a tracked head");
+const movedHead = cloudHeadBounds(points.map(point => ({ x: point.x + 0.1, y: point.y + 0.05 })));
+assert(Math.abs(movedHead[0] - head[0] - 0.1) < 1e-8, "Clouds follow horizontal head movement");
+assert(Math.abs(movedHead[1] - head[1] - 0.05) < 1e-8, "Clouds follow vertical head movement");
+assert.equal(cloudHeadBounds(Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5 }))), undefined, "Degenerate face clears clouds");
+const confidence = new Float32Array([0, 0.5, 1, NaN, -0.5, 1.5]);
+const mask = personMaskFromConfidence(confidence, 3, 2);
+assert.deepEqual([...mask.data], [0, 128, 255, 0, 0, 255], "Silhouette confidence is clamped and packed without inversion");
+assert.equal(mask.width, 3);
+assert.equal(mask.height, 2);
+assert.equal(confidence[1], 0.5, "Source confidence mask is not mutated");
+assert.deepEqual([...personMaskFromConfidence(new Float32Array(4), 2, 2).data], [0, 0, 0, 0], "No person produces an empty aura mask");
+assert.throws(() => personMaskFromConfidence(confidence, 2, 2), RangeError);
+assert.throws(() => personMaskFromConfidence(new Float32Array(), 0, 0), RangeError);
+assert.deepEqual(auraColorRgb("#00ff00"), [0, 1, 0]);
+assert.deepEqual(auraColorRgb("#0000FF"), [0, 0, 1]);
+assert.deepEqual(auraColorRgb("invalid"), auraColorRgb("#ff6500"));
+console.log("Person silhouette mask and aura colour checks passed");

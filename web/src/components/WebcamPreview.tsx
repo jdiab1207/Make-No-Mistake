@@ -3,16 +3,20 @@
 import { useEffect, useRef } from "react";
 import FaceWarpLayer from "./FaceWarpLayer";
 import type { FacePreset } from "@/lib/faceWarp";
+import type { AuraMode } from "@/lib/fireAura";
 
 type Props = {
   active: boolean;
   filter: FacePreset;
   strength: number;
+  auraMode: AuraMode;
+  auraColor: string;
+  auraSize: number;
   onTracking: (message: string) => void;
   onStatus: (status: "loading" | "ready" | "error", detail?: string) => void;
 };
 
-export default function WebcamPreview({ active, filter, strength, onStatus, onTracking }: Props) {
+export default function WebcamPreview({ active, filter, strength, auraMode, auraColor, auraSize, onStatus, onTracking }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -76,7 +80,7 @@ export default function WebcamPreview({ active, filter, strength, onStatus, onTr
   return (
     <div className="nt-webcam-stage">
       <video ref={videoRef} className="nt-webcam-video" playsInline muted autoPlay aria-label="Live webcam preview" />
-      <FaceWarpLayer key={active && filter !== "original" ? "on" : "off"} videoRef={videoRef} active={active} preset={filter} strength={strength} onTracking={onTracking} />
+      <FaceWarpLayer key={active && (filter !== "original" || auraMode !== "off") ? "on" : "off"} videoRef={videoRef} active={active} preset={filter} strength={strength} auraMode={auraMode} auraColor={auraColor} auraSize={auraSize} onTracking={onTracking} />
     </div>
   );
 }

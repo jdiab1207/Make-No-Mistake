@@ -1,3 +1,5 @@
+import { auraColorRgb, cloudHeadBounds, type PersonMask, type AuraMode } from "./fireAura";
+
 export type FacePreset = "original" | "mog" | "not-mog";
 export type Point = { x: number; y: number };
 export type Warp = { center: Point; radius: Point; move: Point; bulge: number };
@@ -75,6 +77,27 @@ uniform vec4 regions[8];
 uniform vec3 changes[8];
 uniform int count;
 uniform float strength;
+uniform sampler2D personMask;
+uniform int auraEnabled;
+uniform vec4 cloudHead;
+uniform int cloudHeadAvailable;
+uniform vec3 auraColor;
+uniform float time;
+uniform float aspect;
+uniform float auraSize;
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float personAt(vec2 p) {
+  if (p.x < 0.0 || p.y < 0.0 || p.x > 1.0 || p.y > 1.0) return 0.0;
+  return smoothstep(0.35, 0.75, texture2D(personMask, p).r);
+}
+
 void main() {
   vec2 sampleUV = uv;
   for (int i = 0; i < 8; i++) {
@@ -88,7 +111,55 @@ void main() {
       sampleUV -= (uv - center) * changes[i].z * strength * weight;
     }
   }
-  gl_FragColor = texture2D(frame, clamp(sampleUV, 0.001, 0.999));
+  vec3 image = texture2D(frame, clamp(sampleUV, 0.001, 0.999)).rgb;
+  if (auraEnabled == 1) {
+    float outside = 1.0 - personAt(sampleUV);
+    // The silhouette includes hair, shoulders and clothing; protect its entire interior.
+    if (outside > 0.01) {
+      vec2 fireUV = vec2(sampleUV.x * 24.0 * aspect, sampleUV.y * 13.0 + time * 2.8);
+      float turbulence = noise(fireUV) * 0.65 + noise(fireUV * 2.3 + time * 0.7) * 0.35;
+      float reach = (0.035 + 0.09 * pow(turbulence, 1.6)) * auraSize;
+      float field = 0.0;
+      // Dilate the person mask with rising, turbulent offsets to create broad flame tongues.
+      for (int direction = 0; direction < 8; direction++) {
+        float angle = float(direction) * 0.785398;
+        vec2 offset = vec2(cos(angle) * reach / aspect, (sin(angle) + 0.65) * reach);
+        for (int ring = 1; ring <= 6; ring++) {
+          float radius = float(ring) / 6.0;
+          field = max(field, personAt(sampleUV + offset * radius) * (1.0 - radius * 0.8));
+        }
+      }
+      float heat = smoothstep(0.12, 0.85, field) * outside;
+      float glow = field * outside * 0.3;
+      vec3 flame = mix(auraColor * 0.5, auraColor * 1.7, heat);
+      flame = mix(flame, vec3(1.0, 0.96, 0.82), pow(heat, 5.0) * 0.85);
+      image = mix(image, clamp(flame, 0.0, 1.0), heat * 0.9);
+      image += auraColor * glow;
+    }
+  }
+  if (auraEnabled == 2 && cloudHeadAvailable == 1) {
+    vec2 p = (sampleUV - cloudHead.xy) * vec2(aspect, 1.0);
+    vec2 orbit = cloudHead.zw * vec2(aspect, 1.0);
+    float clouds = 0.0;
+    float detail = noise(p * 28.0 + vec2(time * 0.18, -time * 0.22));
+    for (int i = 0; i < 12; i++) {
+      float id = float(i);
+      float phase = time * 0.3 + id * 2.17;
+      float angle = id * 0.523599 + sin(phase) * 0.12;
+      vec2 center = orbit * vec2(cos(angle), sin(angle));
+      center += orbit * 0.08 * vec2(sin(phase * 1.3), cos(phase));
+      float radius = cloudHead.w * 0.29 * auraSize * (0.85 + 0.15 * sin(phase));
+      vec2 q = (p - center) / max(radius, 0.001);
+      // Overlapping round lobes make puffy clouds, distinct from the sharp fire tongues.
+      float d = min(length(q), min(length(q - vec2(0.55, -0.1)), length(q + vec2(0.4, 0.2))));
+      float puff = (1.0 - smoothstep(0.6, 1.15, d + detail * 0.17)) * (0.75 + 0.25 * sin(phase));
+      clouds = max(clouds, puff);
+    }
+    float outside = 1.0 - personAt(sampleUV);
+    vec3 cloudColor = mix(auraColor * 0.28, mix(auraColor, vec3(0.8, 0.82, 0.66), 0.35), detail);
+    image = mix(image, cloudColor, clouds * outside * 0.83);
+  }
+  gl_FragColor = vec4(image, 1.0);
 }`;
 
 export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
@@ -98,8 +169,10 @@ export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
   const program = gl.createProgram()!;
   const buffer = gl.createBuffer();
   const texture = gl.createTexture();
+  const maskTexture = gl.createTexture();
   function dispose() {
     gl!.deleteTexture(texture);
+    gl!.deleteTexture(maskTexture);
     gl!.deleteBuffer(buffer);
     gl!.deleteProgram(program);
     shaders.forEach((shader) => gl!.deleteShader(shader));
@@ -127,6 +200,15 @@ export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.uniform1i(gl.getUniformLocation(program, "frame"), 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, maskTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([0]));
+    gl.uniform1i(gl.getUniformLocation(program, "personMask"), 1);
   } catch (error) {
     dispose();
     throw error;
@@ -137,8 +219,16 @@ export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
   const changeLocation = gl.getUniformLocation(program, "changes[0]");
   const countLocation = gl.getUniformLocation(program, "count");
   const strengthLocation = gl.getUniformLocation(program, "strength");
+  const auraEnabledLocation = gl.getUniformLocation(program, "auraEnabled");
+  const cloudHeadLocation = gl.getUniformLocation(program, "cloudHead");
+  const cloudHeadAvailableLocation = gl.getUniformLocation(program, "cloudHeadAvailable");
+  const auraColorLocation = gl.getUniformLocation(program, "auraColor");
+  const timeLocation = gl.getUniformLocation(program, "time");
+  const aspectLocation = gl.getUniformLocation(program, "aspect");
+  const auraSizeLocation = gl.getUniformLocation(program, "auraSize");
+  let previousMask: PersonMask | undefined;
   return {
-    draw(video: HTMLVideoElement, warps: Warp[], strength: number) {
+    draw(video: HTMLVideoElement, warps: Warp[], strength: number, aura?: { mode: AuraMode; points: Point[]; mask: PersonMask; color: string; time: number; size: number }) {
       if (gl.isContextLost()) throw new Error("Face renderer lost its context");
       if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
         canvas.width = video.videoWidth;
@@ -146,6 +236,7 @@ export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
       }
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(program);
+      gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
       warps.slice(0, 8).forEach((warp, i) => {
@@ -156,6 +247,20 @@ export function createFaceWarpRenderer(canvas: HTMLCanvasElement) {
       gl.uniform3fv(changeLocation, changes);
       gl.uniform1i(countLocation, Math.min(warps.length, 8));
       gl.uniform1f(strengthLocation, Math.max(0, Math.min(1, strength)));
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, maskTexture);
+      if (aura && aura.mask !== previousMask) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, aura.mask.width, aura.mask.height, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, aura.mask.data);
+        previousMask = aura.mask;
+      }
+      gl.uniform1i(auraEnabledLocation, aura?.mode === "fire" ? 1 : aura?.mode === "clouds" ? 2 : 0);
+      const head = aura?.mode === "clouds" ? cloudHeadBounds(aura.points) : undefined;
+      gl.uniform4fv(cloudHeadLocation, head ?? [0, 0, 0, 0]);
+      gl.uniform1i(cloudHeadAvailableLocation, head ? 1 : 0);
+      gl.uniform3fv(auraColorLocation, auraColorRgb(aura?.color ?? "#ff6500"));
+      gl.uniform1f(timeLocation, (aura?.time ?? 0) / 1000);
+      gl.uniform1f(aspectLocation, canvas.width / canvas.height);
+      gl.uniform1f(auraSizeLocation, aura?.size ?? 1.6);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     },
     dispose,

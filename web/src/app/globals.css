@@ -136,6 +136,13 @@ body {
   min-width: 30px;
 }
 
+.nt-filter-control input[type="color"] {
+  width: 36px;
+  height: 25px;
+  padding: 2px;
+  cursor: pointer;
+}
+
 .nt-filter-control {
   display: flex;
   align-items: center;
