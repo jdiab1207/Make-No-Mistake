@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import ChadMorphFilter from "./ChadMorphFilter";
+import { useCallback, useEffect, useRef, useState } from "react";
+import WebcamPreview from "./WebcamPreview";
+import type { FacePreset } from "@/lib/faceWarp";
+import { scoreToFaceFilter } from "@/lib/scoreToFaceFilter";
 
 type FilterStatus = "idle" | "loading" | "ready" | "error";
 type ScanPhase = "idle" | "scanning" | "done";
@@ -11,6 +13,26 @@ export default function CameraWindow() {
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [scanPhase, setScanPhase] = useState<ScanPhase>("idle");
   const [scanLabel, setScanLabel] = useState("Ready to scan");
+  const [previewKey, setPreviewKey] = useState(0);
+  const [cameraOn, setCameraOn] = useState(true);
+  const [filter, setFilter] = useState<FacePreset>("original");
+  const [strength, setStrength] = useState(0.75);
+  const [demoScore, setDemoScore] = useState(60);
+  const [trackingMessage, setTrackingMessage] = useState("Loading face tracking…");
+  const onTracking = useCallback((message: string) => setTrackingMessage(message), []);
+  const scanTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (scanTimer.current) clearInterval(scanTimer.current);
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (scanTimer.current) clearInterval(scanTimer.current);
+    setCameraOn(false);
+    setFilterStatus("idle");
+    setErrorDetail(null);
+    setScanPhase("idle");
+  }, []);
 
   const onStatus = useCallback((status: "loading" | "ready" | "error", detail?: string) => {
     setFilterStatus(status);
@@ -22,11 +44,10 @@ export default function CameraWindow() {
 
     setScanPhase("scanning");
     const steps = [
-      "Locking face mesh…",
-      "Checking LinkedIn vibes…",
-      "Reading captions…",
-      "Measuring jaw mog…",
-      "Computing aura…",
+      "Starting demo scan…",
+      "Calibrating aura…",
+      "Adding dramatic suspense…",
+      "Preparing demo result…",
     ];
 
     let i = 0;
@@ -38,10 +59,15 @@ export default function CameraWindow() {
         return;
       }
       window.clearInterval(id);
-      setScanLabel("Aura locked — Max Aura adjacent");
+      const output = scoreToFaceFilter(demoScore);
+      setFilter(output.preset);
+      setStrength(output.strength);
+      if (filter === "original") setTrackingMessage("Loading face tracking…");
+      setScanLabel(`Demo score ${output.score}/100 · ${output.preset === "mog" ? "Mog" : "Not Mog"} ${Math.round(output.strength * 100)}%`);
       setScanPhase("done");
     }, 700);
-  }, [filterStatus, scanPhase]);
+    scanTimer.current = id;
+  }, [filterStatus, scanPhase, demoScore, filter]);
 
   return (
     <div className="window nt-camera-window" role="dialog" aria-label="Aura Scanner">
@@ -50,7 +76,7 @@ export default function CameraWindow() {
         <div className="title-bar-controls">
           <button type="button" aria-label="Minimize" />
           <button type="button" aria-label="Maximize" />
-          <button type="button" aria-label="Close" />
+          <button type="button" aria-label="Close" onClick={stopCamera} />
         </div>
       </div>
 
@@ -71,17 +97,20 @@ export default function CameraWindow() {
 
       <div className="window-body">
         <div className="sunken-panel nt-camera-well">
-          <ChadMorphFilter onStatus={onStatus} />
+          <WebcamPreview key={previewKey} active={cameraOn} filter={filter} strength={strength} onStatus={onStatus} onTracking={onTracking} />
+          {filterStatus === "idle" && !cameraOn && (
+            <div className="nt-camera-well__placeholder">Camera stopped.</div>
+          )}
           {filterStatus === "loading" && (
-            <div className="nt-camera-well__badge">Starting camera + morph…</div>
+            <div className="nt-camera-well__badge" role="status">{errorDetail ?? "Opening camera…"}</div>
           )}
           {filterStatus === "error" && (
-            <div className="nt-camera-well__badge">
-              Filter error{errorDetail ? `: ${errorDetail}` : ""}
+            <div className="nt-camera-well__badge" role="alert">
+              {errorDetail ?? "Could not open the camera."}
             </div>
           )}
           {filterStatus === "ready" && scanPhase === "idle" && (
-            <div className="nt-camera-well__badge">Live preview — hit Scan Aura</div>
+            <div className="nt-camera-well__badge" role="status">{filter === "original" ? "Original camera · Choose a preset below" : trackingMessage}</div>
           )}
           {scanPhase === "scanning" && (
             <div className="nt-camera-well__badge">{scanLabel}</div>
@@ -92,6 +121,35 @@ export default function CameraWindow() {
         </div>
 
         <div className="nt-toolbar">
+          {cameraOn && filterStatus !== "error" ? (
+            <button type="button" onClick={stopCamera}>Stop Camera</button>
+          ) : (
+            <button type="button" onClick={() => {
+              setFilterStatus("loading");
+              setErrorDetail(null);
+              setCameraOn(true);
+              setScanPhase("idle");
+              setPreviewKey((key) => key + 1);
+            }}>
+              {filterStatus === "error" ? "Retry Camera" : "Start Camera"}
+            </button>
+          )}
+          <label className="nt-filter-control">
+            Filter
+            <select aria-label="Camera filter" value={filter} onChange={(event) => {
+              setFilter(event.target.value as FacePreset);
+              if (filter === "original") setTrackingMessage("Loading face tracking…");
+            }}>
+              <option value="original">Original</option>
+              <option value="mog">Mog</option>
+              <option value="not-mog">Not Mog</option>
+            </select>
+          </label>
+          <label className="nt-filter-control">
+            Strength
+            <input type="range" aria-label="Filter strength" min="0" max="100" value={Math.round(strength * 100)} disabled={filter === "original"} onChange={(event) => setStrength(Number(event.target.value) / 100)} />
+            <output>{Math.round(strength * 100)}%</output>
+          </label>
           <button
             type="button"
             className="default nt-scan-btn"
@@ -100,6 +158,13 @@ export default function CameraWindow() {
           >
             {scanPhase === "scanning" ? "Scanning…" : "Scan Aura"}
           </button>
+          <label className="nt-filter-control">
+            Demo score
+            <input type="number" aria-label="Demo aura score" min="0" max="100" step="1" value={demoScore} disabled={scanPhase === "scanning"} style={{ width: 55 }} onChange={(event) => {
+              const value = event.target.valueAsNumber;
+              if (Number.isFinite(value)) setDemoScore(Math.max(0, Math.min(100, value)));
+            }} />
+          </label>
         </div>
       </div>
 
@@ -108,12 +173,12 @@ export default function CameraWindow() {
           {filterStatus === "ready"
             ? scanPhase === "scanning"
               ? scanLabel
-              : "Camera live · OpenMakeupSDK Chad morph"
+              : "Camera live · Local preview"
             : filterStatus === "loading"
-              ? "Initializing…"
+              ? errorDetail ?? "Initializing…"
               : filterStatus === "error"
                 ? "Error"
-                : "Booting…"}
+                : cameraOn ? "Opening camera…" : "Camera off"}
         </p>
         <p className="status-bar-field" style={{ flexGrow: 0, width: 110, textAlign: "center" }}>
           {filterStatus === "ready" ? "CAM ON" : "—"}

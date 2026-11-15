@@ -6,11 +6,14 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepare:face": "node scripts/prepare-face-assets.mjs",
+    "postinstall": "node scripts/prepare-face-assets.mjs"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1675466862",
     "@mediapipe/face_mesh": "^0.4.1633559619",
+    "@mediapipe/tasks-vision": "^1.2.3",
     "98.css": "^0.1.21",
     "next": "16.4.6",
     "open-makeup-sdk": "^0.1.0",
