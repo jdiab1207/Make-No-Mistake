@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import WebcamPreview from "./WebcamPreview";
 import type { FacePreset } from "@/lib/faceWarp";
+import type { AuraMode } from "@/lib/fireAura";
 import { scoreToFaceFilter } from "@/lib/scoreToFaceFilter";
 
 type FilterStatus = "idle" | "loading" | "ready" | "error";
@@ -63,6 +64,10 @@ export default function CameraWindow() {
   const [filter, setFilter] = useState<FacePreset>("original");
   const [strength, setStrength] = useState(0.75);
   const [demoScore, setDemoScore] = useState(60);
+  const [auraMode, setAuraMode] = useState<AuraMode>("off");
+  const [auraColors, setAuraColors] = useState({ fire: "#ff6500", clouds: "#8ca64a" });
+  const auraColor = auraColors[auraMode === "clouds" ? "clouds" : "fire"];
+  const [auraSize, setAuraSize] = useState(1.6);
   const [trackingMessage, setTrackingMessage] = useState("Loading face tracking…");
   const [popupMeme, setPopupMeme] = useState<ReactionMeme | null>(null);
   const [popupScore, setPopupScore] = useState<number | null>(null);
@@ -124,8 +129,9 @@ export default function CameraWindow() {
       const output = scoreToFaceFilter(demoScore);
       setFilter(output.preset);
       setStrength(output.strength);
-      if (filter === "original") setTrackingMessage("Loading face tracking…");
-      setScanLabel(`Demo score ${output.score}/100 · ${output.preset === "mog" ? "Mog" : "Not Mog"} ${Math.round(output.strength * 100)}%`);
+      setAuraMode(output.aura);
+      if (filter === "original" && auraMode === "off") setTrackingMessage("Loading face tracking…");
+      setScanLabel(`Demo score ${output.score}/100 · ${output.preset === "mog" ? "Mog + Fire" : "Not Mog + Fart clouds"} ${Math.round(output.strength * 100)}%`);
       setPopupScore(output.score);
       if (output.score >= 75) {
         setPopupMeme(pickDifferentMeme(HIGH_AURA_MEMES, lastHighPopupIndex));
@@ -139,7 +145,7 @@ export default function CameraWindow() {
       setScanPhase("done");
     }, 700);
     scanTimer.current = id;
-  }, [filterStatus, scanPhase, demoScore, filter]);
+  }, [filterStatus, scanPhase, demoScore, filter, auraMode]);
 
   return (
     <div className="window nt-camera-window" role="dialog" aria-label="Aura Scanner">
@@ -196,7 +202,7 @@ export default function CameraWindow() {
 
       <div className="window-body">
         <div className="sunken-panel nt-camera-well">
-          <WebcamPreview key={previewKey} active={cameraOn} filter={filter} strength={strength} onStatus={onStatus} onTracking={onTracking} />
+          <WebcamPreview key={previewKey} active={cameraOn} filter={filter} strength={strength} auraMode={auraMode} auraColor={auraColor} auraSize={auraSize} onStatus={onStatus} onTracking={onTracking} />
           {filterStatus === "idle" && !cameraOn && (
             <div className="nt-camera-well__placeholder">Camera stopped.</div>
           )}
@@ -209,7 +215,7 @@ export default function CameraWindow() {
             </div>
           )}
           {filterStatus === "ready" && scanPhase === "idle" && (
-            <div className="nt-camera-well__badge" role="status">{filter === "original" ? "Original camera · Choose a preset below" : trackingMessage}</div>
+            <div className="nt-camera-well__badge" role="status">{filter === "original" && auraMode === "off" ? "Original camera · Choose a preset below" : trackingMessage}</div>
           )}
           {scanPhase === "scanning" && (
             <div className="nt-camera-well__badge">{scanLabel}</div>
@@ -237,12 +243,32 @@ export default function CameraWindow() {
             Filter
             <select aria-label="Camera filter" value={filter} onChange={(event) => {
               setFilter(event.target.value as FacePreset);
-              if (filter === "original") setTrackingMessage("Loading face tracking…");
+              if (filter === "original" && auraMode === "off") setTrackingMessage("Loading face tracking…");
             }}>
               <option value="original">Original</option>
               <option value="mog">Mog</option>
               <option value="not-mog">Not Mog</option>
             </select>
+          </label>
+          <label className="nt-filter-control">
+            Aura
+            <select aria-label="Aura effect" value={auraMode} onChange={(event) => {
+              setAuraMode(event.target.value as AuraMode);
+              if (auraMode === "off" && filter === "original") setTrackingMessage("Loading tracking…");
+            }}>
+              <option value="off">Off</option>
+              <option value="fire">Fire</option>
+              <option value="clouds">Fart clouds</option>
+            </select>
+          </label>
+          <label className="nt-filter-control">
+            Aura colour
+            <input type="color" aria-label="Aura colour" value={auraColor} disabled={auraMode === "off"} onChange={(event) => setAuraColors(previous => ({ ...previous, [auraMode === "clouds" ? "clouds" : "fire"]: event.target.value }))} />
+          </label>
+          <label className="nt-filter-control">
+            Aura size
+            <input type="range" aria-label="Aura size" min="50" max="250" value={Math.round(auraSize * 100)} disabled={auraMode === "off"} onChange={(event) => setAuraSize(Number(event.target.value) / 100)} />
+            <output>{Math.round(auraSize * 100)}%</output>
           </label>
           <label className="nt-filter-control">
             Strength
