@@ -1,0 +1,251 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #008080;
+  color: #222;
+  font-family: "Pixelated MS Sans Serif", Tahoma, "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
+}
+
+/* Classic Windows NT 4.0 / Win95 solid title bar (not Win98 gradient) */
+.window > .title-bar {
+  background: #000080;
+}
+
+.window > .title-bar.inactive {
+  background: #808080;
+}
+
+.nt-desktop {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #008080;
+  overflow: hidden;
+}
+
+.nt-desktop__stage {
+  position: absolute;
+  inset: 0 0 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.nt-camera-window {
+  width: min(640px, calc(100vw - 32px));
+  max-width: 640px;
+}
+
+.nt-camera-window .window-body {
+  margin: 6px;
+}
+
+.nt-menubar {
+  display: flex;
+  gap: 2px;
+  margin: 0 2px 6px;
+  padding: 1px 2px;
+  background: silver;
+  border-bottom: 1px solid #808080;
+  box-shadow: 0 1px 0 #fff;
+}
+
+.nt-menubar button {
+  all: unset;
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
+  font-size: 11px;
+  color: #000;
+  cursor: default;
+}
+
+.nt-menubar button:hover,
+.nt-menubar button:focus {
+  background: #000080;
+  color: #fff;
+  outline: none;
+}
+
+.nt-menubar button u {
+  border-bottom: 1px solid currentColor;
+  text-decoration: none;
+}
+
+.nt-camera-well {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  overflow: hidden;
+}
+
+.nt-camera-well video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  background: #000;
+}
+
+.nt-camera-well__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #000;
+  color: #c0c0c0;
+  text-align: center;
+  padding: 16px;
+  font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
+  font-size: 11px;
+}
+
+.nt-camera-well__placeholder p {
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.4;
+}
+
+.nt-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.nt-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 3px;
+  background: silver;
+  box-shadow: inset 1px 1px #fff, inset -1px 0 #808080;
+  border-top: 1px solid #fff;
+  z-index: 20;
+}
+
+.nt-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  min-width: 54px;
+  padding: 0 6px 0 4px;
+  font-weight: 700;
+}
+
+.nt-start__logo {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.nt-taskbar__divider {
+  width: 2px;
+  height: 22px;
+  margin: 0 2px;
+  box-shadow: inset 1px 0 #808080, inset -1px 0 #fff;
+}
+
+.nt-taskbar__window-btn {
+  height: 22px;
+  min-width: 140px;
+  max-width: 200px;
+  padding: 0 8px;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf,
+    inset 2px 2px grey !important;
+}
+
+.nt-taskbar__tray {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 6px;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey;
+  font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
+  font-size: 11px;
+}
+
+.nt-desktop-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1;
+}
+
+.nt-icon {
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+  text-align: center;
+  cursor: default;
+  user-select: none;
+}
+
+.nt-icon__glyph {
+  width: 32px;
+  height: 32px;
+  background: #c0c0c0;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey,
+    inset 2px 2px #dfdfdf;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  color: #000080;
+  font-weight: 700;
+  font-family: Tahoma, sans-serif;
+}
+
+.nt-icon__label {
+  padding: 1px 3px;
+  font-family: "Pixelated MS Sans Serif", Tahoma, sans-serif;
+  font-size: 11px;
+  text-shadow: 1px 1px 0 #000;
+  line-height: 1.2;
+}
+
+.nt-icon:focus .nt-icon__label,
+.nt-icon[aria-selected="true"] .nt-icon__label {
+  background: #000080;
+  outline: 1px dotted #fff;
+}
